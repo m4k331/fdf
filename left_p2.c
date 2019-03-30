@@ -1,22 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   draw_line.c                                        :+:      :+:    :+:   */
+/*   left_p2.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ahugh <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/03/06 17:33:40 by ahugh             #+#    #+#             */
-/*   Updated: 2019/03/28 16:02:18 by ahugh            ###   ########.fr       */
+/*   Created: 2019/03/27 23:03:13 by ahugh             #+#    #+#             */
+/*   Updated: 2019/03/27 23:04:16 by ahugh            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "draw.h"
 
-int					draw_line_smoothing(t_img *img, t_px bgn, t_px end)
+const int		l10(t_img *img, t_px *bgn, t_px *end)
 {
-	if (bgn.x == end.x || bgn.y == end.y)
-		draw_straight_line(img, &bgn, &end);
-	else
-		draw_slant_line(img, &bgn, &end);
+	clip_bgn_left(img, bgn, end);
+	return (1);
+}
+
+const int		l12(t_img *img, t_px *bgn, t_px *end)
+{
+	clip_bgn_left(img, bgn, end);
+	clip_end_right(img, bgn, end);
+	return (1);
+}
+
+const int		l14(t_img *img, t_px *bgn, t_px *end)
+{
+	clip_bgn_left(img, bgn, end);
+	if (bgn->y - end->y == 0)
+		bgn->y = img->height - 2;
+	clip_end_bottom(img, bgn, end);
+	if (bgn->y > img->height - 2)
+		return (0);
 	return (1);
 }

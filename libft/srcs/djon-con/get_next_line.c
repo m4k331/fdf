@@ -1,115 +1,123 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   new_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: djon-con <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: ahugh <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/12/08 23:45:04 by djon-con          #+#    #+#             */
-/*   Updated: 2018/12/14 18:49:27 by djon-con         ###   ########.fr       */
+/*   Created: 2018/12/05 19:39:19 by ahugh             #+#    #+#             */
+/*   Updated: 2019/03/29 16:21:53 by ahugh            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static	t_list		*lst_find_size(t_list *list, size_t content_size)
+void				free_vector(const int fd, t_vec **v_arr)
 {
-	if (!list)
-		return (NULL);
-	while (list && (list)->content_size != content_size)
-		list = (list)->next;
-	return (list);
+	ft_memdel((void**)&v_arr[fd]->con);
+	ft_memdel((void**)&v_arr[fd]);
+	v_arr[fd] = NULL;
 }
 
-static t_bobr		*ft_bobrnew(void)
+t_vec				*get_vec(const int fd, t_vec **v_arr)
 {
-	t_bobr	*tmp;
-
-	if (!(tmp = (t_bobr*)malloc(sizeof(t_bobr))))
+	if (!v_arr || fd > STACK_SIZE || read(fd, 0, 0) == -1)
 		return (NULL);
-	tmp->size = 0;
-	tmp->buf = ft_strnew(BUFF_SIZE);
-	return (tmp);
-}
-
-int					ft_read_line(t_bobr *bobr, char **tmp, long long i, int fd)
-{
-	long long n;
-
-	n = 0;
-	while (bobr->buf[i] != '\n' && i < bobr->size)
+	if (!v_arr[fd] && (v_arr[fd] = (t_vec*)malloc(sizeof(t_vec))))
 	{
-		if (bobr->buf[i] != '\n' && n == bobr->linesize - 1)
+		if ((v_arr[fd]->con = malloc(BUFF_SIZE)))
 		{
-			bobr->linesize *= 2;
-			*tmp = ft_realloc(*tmp, bobr->linesize);
+			v_arr[fd]->fd = fd;
+			v_arr[fd]->st = 0;
+			v_arr[fd]->hd = 0;
+			v_arr[fd]->sz = BUFF_SIZE;
 		}
-		(*tmp)[n] = bobr->buf[i];
-		n++;
-		i++;
-		if (i == bobr->size && bobr->buf[i - 1] != '\n')
+		else
 		{
-			if ((bobr->size = read(fd, bobr->buf, BUFF_SIZE)) == -1)
+			ft_memdel((void**)&v_arr[fd]);
+			v_arr[fd] = NULL;
+		}
+	}
+	return (v_arr[fd]);
+}
+
+int					get_content_line(t_vec *v, char **line)
+{
+	if (v && line && v->hd && v->con)
+	{
+		while (v->con[v->st] != 10 && v->st < v->hd)
+			v->st++;
+		if (v->con[v->st] == 10)
+		{
+			if (!(*line = malloc(v->st + 1)))
 				return (-1);
-			i = 0;
+			ft_memcpy(*line, v->con, v->st);
+			(*line)[v->st] = 0;
+			v->st == v->sz ? v->st : v->st++;
+			ft_memmove(v->con, &v->con[v->st], v->hd);
+			if (!(v->st < v->hd ? (v->hd -= v->st) : 0))
+				v->hd = 0;
+			v->st = 0;
+			return (1);
 		}
 	}
-	(*tmp)[n] = 0;
-	return (i);
+	return (0);
 }
 
-int					fill_line(char **line, t_bobr *bobr, int fd)
+int					add_nl(t_vec *v)
 {
-	long long	i;
-	char		*tmp;
+	unsigned char	buff[BUFF_SIZE + 1];
+	ssize_t			sz_rd;
+	ssize_t			i;
+	char			tr;
 
-	bobr->linesize = 2;
 	i = 0;
-	if (bobr->size == 0)
-		if ((bobr->size = read(fd, bobr->buf, BUFF_SIZE)) == 0)
-			return (0);
-	if (bobr->size != -1 && (tmp = ft_strnew(bobr->linesize)))
+	tr = 1;
+	sz_rd = -1;
+	while (v && ((sz_rd = read(v->fd, buff, BUFF_SIZE)) > 0))
 	{
-		if ((i = ft_read_line(bobr, &tmp, i, fd)) != -1)
+		if (v->sz - v->hd < BUFF_SIZE && (v->sz == 0 ? (v->sz = BUFF_SIZE) : 1))
+			if ((v->con = ft_realloc(v->con, (v->sz *= 2))) == NULL)
+				break ;
+		while (i < sz_rd)
 		{
-			if (bobr->buf[i] == '\n' && i < bobr->size)
-				bobr->size = bobr->size - (i + 1);
-			bobr->buf = ft_memmove(bobr->buf, bobr->buf + (i + 1), bobr->size);
-			if ((*line = ft_memalloc(bobr->linesize)))
-			{
-				ft_memmove(*line, tmp, bobr->linesize);
-				free(tmp);
-				return (1);
-			}
+			if (tr && (buff[i] == 10) && tr--)
+				v->st = v->hd;
+			v->con[v->hd++] = buff[i++];
 		}
+		if (i != BUFF_SIZE)
+			v->con[v->hd] = 10;
+		if (!(i = 0) && v->con[v->st] == 10)
+			return (1);
 	}
-	return (-1);
+	return (sz_rd == 0 ? 0 : -1);
 }
 
 int					get_next_line(const int fd, char **line)
 {
-	static t_list	*full = NULL;
-	t_list			*lst;
-	t_bobr			*bobr;
-	int				i;
+	static t_vec	*v_arr[STACK_SIZE];
+	t_vec			*v;
+	int				nl;
+	int				gcl;
 
-	if (fd < 0 || BUFF_SIZE < 1 || !line)
-		return (-1);
-	lst = NULL;
-	if ((lst = lst_find_size(full, fd)) == NULL)
+	nl = 0;
+	gcl = -1;
+	v = NULL;
+	if (fd > -1 && line && BUFF_SIZE > -1 && (v = get_vec(fd, v_arr)))
+		if ((gcl = get_content_line(v, line)) == 0)
+		{
+			if ((nl = add_nl(v)) == 0)
+				v->hd != 0 ? (v->con[v->hd] = 10) : 1;
+			gcl = get_content_line(v, line);
+		}
+	if (gcl == 1)
+		return (1);
+	if (v)
+		free_vector(fd, v_arr);
+	if (gcl == 0)
 	{
-		if (!(bobr = ft_bobrnew()))
-			return (-1);
-		lst = ft_lstnew(NULL, 0);
-		lst->content = bobr;
-		ft_lstadd(&full, lst);
-		lst->content_size = fd;
+		(line != NULL) ? (line = NULL) : line;
+		return (0);
 	}
-	i = fill_line(line, lst->content, fd);
-	if ((i == -1 || i == 0) && lst->content)
-	{
-		free((((t_bobr*)lst->content)->buf));
-		ft_lstrm(&full, &lst);
-	}
-	return (i);
+	return (-1);
 }

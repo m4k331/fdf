@@ -6,7 +6,7 @@
 #    By: ahugh <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/23 18:51:35 by ahugh             #+#    #+#              #
-#    Updated: 2019/03/12 19:10:07 by djon-con         ###   ########.fr        #
+#    Updated: 2019/03/15 17:05:28 by djon-con         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -97,7 +97,8 @@ LST				=	ft_lstadd.c \
 DJC				=	atoi_move.c \
 					print_int_arr.c \
 					ft_realloc.c	\
-					get_next_line.c
+					get_next_line.c \
+					ft_atoi_hex.c
 
 UTL				=	ft_arrdel.c \
 					ft_isalnum.c \
@@ -160,7 +161,7 @@ $(NAME):
 				@ar rc $(NAME) $(OBJ)
 				@ranlib $(NAME)
 
-%.o: %c
+%.o: %.c
 				@$(CC) $(FLAGS) $< -o $@
 
 clean:

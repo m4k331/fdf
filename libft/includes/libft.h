@@ -6,7 +6,7 @@
 /*   By: ahugh <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/23 18:34:31 by ahugh             #+#    #+#             */
-/*   Updated: 2019/03/12 19:06:24 by djon-con         ###   ########.fr       */
+/*   Updated: 2019/03/28 23:13:26 by ahugh            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include "list.h"
 # include "get_next_line.h"
 
+unsigned long		ft_atoi_move_hex(char **str);
 int					get_next_line(int fd, char **line);
 int					atoi_move(char **str);
 int					ft_memcmp(const void *s1, const void *s2, size_t n);
@@ -83,6 +84,5 @@ char				*ft_strnstr(const char *h, const char *n, size_t len);
 size_t				ft_strlen(const char *s);
 size_t				ft_strlcat(char *dst, const char *src, size_t size);
 size_t				ft_wc(char const *s, char c);
-
 
 #endif

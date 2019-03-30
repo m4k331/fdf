@@ -6,66 +6,67 @@
 /*   By: ahugh <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/09 16:54:42 by ahugh             #+#    #+#             */
-/*   Updated: 2019/03/17 20:29:35 by ahugh            ###   ########.fr       */
+/*   Updated: 2019/03/28 18:49:23 by ahugh            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "draw.h"
 
-#define IS_NEGATIVE(x, y) ((x) < 0 || (y) < 0)
-#define IS_OVER(x, y, xe, ye) ((x) > (xe) || (y) > (ye))
-
-int					is_steep_line(t_px *bgn, t_px *end)
+void			swap_coords(t_px **bgn, t_px **end)
 {
-	int				steep;
+	ft_swap64((uint64_t*)bgn, (uint64_t*)end);
+}
 
-	steep = 0;
-	if (end->x - bgn->x < ABS(end->y - bgn->y))
+/*
+** Visible area of the window is under code 0000
+**
+** 1001 | 1000 | 1010
+** -----|------|-----
+** 0001 | 0000 | 0010
+** -----|------|-----
+** 0101 | 0100 | 0110
+*/
+
+int				get_code_px(t_img *img, t_px *px)
+{
+	return ((px->x <= 0) | \
+			((px->x > img->width - 1) << 1) | \
+			((px->y > img->height - 1) << 2) | \
+			((px->y <= 0) << 3));
+}
+
+int				fc_line(t_img *img, t_px *bgn, t_px *end)
+{
+	const int	(*fc[151])(t_img*, t_px*, t_px*) = {c0, 0, c2, 0, c4, 0, c6, \
+		0, c8, 0, ca, 0, 0, 0, 0, 0, l10, 0, l12, 0, l14, 0, l16, \
+			0, l18, 0, l1a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+			0, 0, 0, 0, 0, 0, b40, 0, b42, 0, 0, 0, 0, 0, b48, 0, \
+			b4a, 0, 0, 0, 0, 0, lb50, 0, lb52, 0, 0, 0, 0, 0, \
+			lb58, 0, lb5a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+			0, 0, 0, 0, 0, 0, t80, 0, t82, 0, t84, 0, t86, 0, 0, \
+			0, 0, 0, 0, 0, 0, 0, lt90, 0, lt92, 0, lt94, 0, lt96};
+	int			code_bgn;
+	int			code_end;
+	int			code_line;
+
+	code_bgn = get_code_px(img, bgn);
+	code_end = get_code_px(img, end);
+	code_line = (code_bgn << 4) | code_end;
+	if (code_bgn & code_end)
+		return (1);
+	if (!fc[code_line](img, bgn, end))
+		return (1);
+	return (0);
+}
+
+void			set_px(t_px *px, int x, int y, int color)
+{
+	if (px)
 	{
-		ft_swap32((uint32_t*)&bgn->x, (uint32_t*)&bgn->y);
-		ft_swap32((uint32_t*)&end->x, (uint32_t*)&end->y);
-		steep = 1;
+		px->x = x;
+		px->y = y;
+		px->color = color;
 	}
-	return (steep);
-}
-
-static inline void	fix_bgn_coord(t_img *img, t_px *bgn, t_px *end)
-{
-	int				dx;
-	int				dy;
-	int				x;
-	int				y;
-
-	x = ABS(end->x - bgn->x);
-	y = ABS(end->y - bgn->y);
-	dx = x - ABS(bgn->x);
-	dy = y - (int)((float)(ABS(bgn->x) / (float)x) * y + 0.5);
-	bgn->x = end->x - dx;
-	bgn->y = (bgn->y < end->y ? end->y - dy : end->y + dy);
-}
-
-static inline void	fix_end_coord(t_img *img, t_px *bgn, t_px *end)
-{
-
-}
-
-int					fix_coords_beyond_img(t_img *img, t_px *bgn, t_px *end)
-{
-	int				xe;
-	int				ye;
-
-	xe = img->width - 1;
-	ye = img->height - 2;
-	printf("bgn[%d,%d]\tend[%d,%d]\t", bgn->x, bgn->y, end->x, end->y);
-	if ((IS_OVER(bgn->x, bgn->y, xe, ye) && IS_OVER(end->x, end->y, xe, ye)) || 
-			(IS_NEGATIVE(bgn->x, bgn->y) && IS_NEGATIVE(end->x, end->y)))
-	{
-		printf("DD\n");
-		return (0);
-	}
-	if (IS_NEGATIVE(bgn->x, bgn->y) || IS_NEGATIVE(end->x, end->y))
-		fix_bgn_coord(img, bgn, end);
-	if (IS_OVER(end->x, end->y, xe, ye))
-		fix_end_coord(img, bgn, end);
-	return (1);
 }

@@ -3,28 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: djon-con <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: ahugh <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/12/01 19:42:02 by djon-con          #+#    #+#             */
-/*   Updated: 2018/12/18 17:33:16 by djon-con         ###   ########.fr       */
+/*   Created: 2018/12/05 16:11:13 by ahugh             #+#    #+#             */
+/*   Updated: 2019/03/29 16:11:01 by ahugh            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
-
-# define BUFF_SIZE 1
-
-# include <fcntl.h>
+# define BUFF_SIZE 1000
+# define STACK_SIZE 8192
 # include "libft.h"
 
-typedef struct	s_bobr
-{
-	long long	size;
-	long long	linesize;
-	char		*buf;
-}				t_bobr;
+int					get_next_line(const int fd, char **line);
 
-int				get_next_line(const int fd, char **line);
+typedef struct		s_vec
+{
+	char			*con;
+	size_t			fd;
+	size_t			st;
+	size_t			hd;
+	size_t			sz;
+}					t_vec;
 
 #endif

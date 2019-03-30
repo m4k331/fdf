@@ -1,22 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   draw_line.c                                        :+:      :+:    :+:   */
+/*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ahugh <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: djon-con <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/03/06 17:33:40 by ahugh             #+#    #+#             */
-/*   Updated: 2019/03/28 16:02:18 by ahugh            ###   ########.fr       */
+/*   Created: 2019/03/15 17:41:27 by djon-con          #+#    #+#             */
+/*   Updated: 2019/03/28 22:43:11 by djon-con         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "draw.h"
 
-int					draw_line_smoothing(t_img *img, t_px bgn, t_px end)
+void	ft_exit(int i)
 {
-	if (bgn.x == end.x || bgn.y == end.y)
-		draw_straight_line(img, &bgn, &end);
-	else
-		draw_slant_line(img, &bgn, &end);
-	return (1);
+	if (i == 1)
+		ft_putstr_fd("Wrong input file.\n", 2);
+	else if (i != 42)
+		perror(NULL);
+	exit(0);
 }
